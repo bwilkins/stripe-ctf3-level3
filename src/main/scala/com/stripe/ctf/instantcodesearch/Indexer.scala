@@ -6,11 +6,12 @@ import java.nio.file._
 import java.nio.charset._
 import java.nio.file.attribute.BasicFileAttributes
 
-class Indexer(indexPath: String) {
-  val root = FileSystems.getDefault().getPath(indexPath)
-  val idx = new Index(root.toAbsolutePath.toString)
+class Indexer(idx: Index, nodeID: Int) {
+  var currentFileNum = 0;
+  var position = nodeID;
 
-  def index() : Indexer = {
+  def index(path: String) : Indexer = {
+    val root = FileSystems.getDefault().getPath(path)
     Files.walkFileTree(root, new SimpleFileVisitor[Path] {
       override def preVisitDirectory(dir : Path, attrs : BasicFileAttributes) : FileVisitResult = {
         if (Files.isHidden(dir) && dir.toString != ".")
@@ -18,6 +19,10 @@ class Indexer(indexPath: String) {
         return FileVisitResult.CONTINUE
       }
       override def visitFile(file : Path, attrs : BasicFileAttributes) : FileVisitResult = {
+        currentFileNum += 1
+        if (currentFileNum != position)
+          return FileVisitResult.CONTINUE
+        position += 3
         if (Files.isHidden(file))
           return FileVisitResult.CONTINUE
         if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS))
@@ -45,9 +50,5 @@ class Indexer(indexPath: String) {
     })
 
     return this
-  }
-
-  def write(path: String) = {
-    idx.write(new File(path))
   }
 }
