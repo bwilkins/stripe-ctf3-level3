@@ -19,10 +19,10 @@ class Indexer(idx: Index, nodeID: Int) {
         return FileVisitResult.CONTINUE
       }
       override def visitFile(file : Path, attrs : BasicFileAttributes) : FileVisitResult = {
-        // currentFileNum += 1
-        // if (currentFileNum != position)
-        //   return FileVisitResult.CONTINUE
-        // position += 3
+        currentFileNum += 1
+        if (currentFileNum != position)
+          return FileVisitResult.CONTINUE
+        position += 3
         if (Files.isHidden(file))
           return FileVisitResult.CONTINUE
         if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS))

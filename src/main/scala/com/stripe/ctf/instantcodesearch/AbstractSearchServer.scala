@@ -14,6 +14,7 @@ import org.jboss.netty.util.CharsetUtil.UTF_8
 import scala.collection.JavaConverters._
 import scala.collection.Map
 import scala.collection.mutable.Buffer
+import scala.collection.mutable.MutableList
 
 abstract class AbstractSearchServer(port: Int, id: Int) extends TwitterServer {
   def query(q: String): Future[HttpResponse]
@@ -65,6 +66,17 @@ abstract class AbstractSearchServer(port: Int, id: Int) extends TwitterServer {
     val response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
     val resultString = results
       .map {r => "\"" + r.path + ":" + r.line + "\""}
+      .mkString("[", ",\n", "]")
+    val content = "{\"success\": true,\n \"results\": " + resultString + "}"
+    response.setContent(copiedBuffer(content, UTF_8))
+
+    response
+  }
+
+  def querySuccessResponse(results: MutableList[String]): HttpResponse = {
+    val response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
+    val resultString = results
+      .map {r => "\"" + r + "\""}
       .mkString("[", ",\n", "]")
     val content = "{\"success\": true,\n \"results\": " + resultString + "}"
     response.setContent(copiedBuffer(content, UTF_8))
